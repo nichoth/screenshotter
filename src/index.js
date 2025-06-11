@@ -1,10 +1,9 @@
+// @ts-check
 import 'dotenv/config'
 import puppeteer from 'puppeteer'
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { fileURLToPath } from 'url'
-import { createDebug } from '@substrate-system/debug'
-const debug = createDebug()
+import { fileURLToPath } from 'node:url'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
@@ -47,12 +46,12 @@ const totalScrollHeight = await page.evaluate(() => document.body.scrollHeight)
 
 const scrollStep = 5  // pixels per frame
 let scrollPosition = 0
-let frame = 0
+let frame = 61  // start at frame 61 b/c we have the intro
 
 const outputDir = path.join(__dirname, '..', 'screenshots')
 await fs.mkdir(outputDir, { recursive: true })
 
-debug('wip', await fs.stat(outputDir))
+await intro()
 
 const startTime = Date.now()
 
@@ -64,12 +63,12 @@ while (scrollPosition < totalScrollHeight) {
     }, scrollPosition)
 
     // Save screenshot
-    const filePath = path.join(
+    const filePath = /** @type {(`${string}.png`)} */(path.join(
         outputDir,
-        `frame_${String(frame).padStart(4, '0')}.png`
-    )
+        `frame_${('' + frame).padStart(4, '0')}.png`
+    ))
     await page.screenshot({
-        path: filePath as `${string}.png`,
+        path: filePath,
         type: 'png',
         fullPage: false,
         omitBackground: false
@@ -94,4 +93,25 @@ function sleep (ms:number):Promise<void> {
     return new Promise((resolve) => {
         setTimeout(resolve, ms)
     })
+}
+
+// take some screenshots before scrolling
+// Take 60 screenshots, one every 1/60th of a second (for 1 second)
+async function intro () {
+    for (let frame = 0; frame < 60; frame++) {
+        const filePath = path.join(
+            outputDir,
+            `frame_${String(frame).padStart(4, '0')}.png`
+        )
+        await page.screenshot({
+            path: filePath as `${string}.png`,
+            type: 'png',
+            fullPage: false,
+            omitBackground: false
+        })
+        // Wait for 1/60th of a second
+        if (frame < 59) {
+            await new Promise(resolve => setTimeout(resolve, 1000 / 60))
+        }
+    }
 }
