@@ -5,7 +5,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-const ANIMATION_FRAMES = 30  // 1/4 second
+const ANIMATION_FRAMES = 30  // 1/2 second
 
 const outputDir = path.join(__dirname, '..', 'screenshots')
 await fs.mkdir(outputDir, { recursive: true })
