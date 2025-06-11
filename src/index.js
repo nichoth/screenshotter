@@ -46,7 +46,7 @@ const totalScrollHeight = await page.evaluate(() => document.body.scrollHeight)
 
 const scrollStep = 5  // pixels per frame
 let scrollPosition = 0
-let frame = 61  // start at frame 61 b/c we have the intro
+let frame = 60  // start at frame 60 b/c we have the intro
 
 const outputDir = path.join(__dirname, '..', 'screenshots')
 await fs.mkdir(outputDir, { recursive: true })
