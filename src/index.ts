@@ -24,6 +24,10 @@ const page = await browser.newPage()
 // Navigate to your website
 await page.goto(URL, { waitUntil: 'networkidle0' })
 
+// webflow badge
+const el = await page.locator('a.w-webflow-badge')
+el._?.remove()
+
 // rm cookie thing
 await page.click('.fs-cc-banner__button.w-button')
 
