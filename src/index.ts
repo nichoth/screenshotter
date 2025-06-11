@@ -19,8 +19,6 @@ const browser = await puppeteer.launch({
     }
 })
 
-debug('wip')
-
 const page = await browser.newPage()
 
 // Navigate to your website
@@ -35,6 +33,8 @@ let frame = 0
 
 const outputDir = path.join(__dirname, '..', 'screenshots')
 await fs.mkdir(outputDir, { recursive: true })
+
+debug('wip', await fs.stat(outputDir))
 
 const startTime = Date.now()
 
