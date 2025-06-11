@@ -1,6 +1,73 @@
+import 'dotenv/config'
+import puppeteer from 'puppeteer'
+import fs from 'node:fs/promises'
+import path from 'node:path'
+import { fileURLToPath } from 'url'
 import { createDebug } from '@substrate-system/debug'
 const debug = createDebug()
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
-export function example ():void {
-    debug('hello')
+const URL = 'https://nolaai.webflow.io/'
+
+const browser = await puppeteer.launch({
+    headless: true,
+    defaultViewport: {
+        width: 1920,
+        height: 1080,
+        deviceScaleFactor: 2 // Retina-like quality
+    }
+})
+
+debug('wip')
+
+const page = await browser.newPage()
+
+// Navigate to your website
+await page.goto(URL, { waitUntil: 'networkidle0' })
+
+// Calculate total scrollable height
+const totalScrollHeight = await page.evaluate(() => document.body.scrollHeight)
+
+const scrollStep = 5  // pixels per frame
+let scrollPosition = 0
+let frame = 0
+
+const outputDir = path.join(__dirname, '..', 'screenshots')
+await fs.mkdir(outputDir, { recursive: true })
+
+const startTime = Date.now()
+
+// Main loop
+while (scrollPosition < totalScrollHeight) {
+    // Scroll
+    await page.evaluate((scrollY) => {
+        window.scrollTo(0, scrollY)
+    }, scrollPosition)
+
+    // Save screenshot
+    const filePath = path.join(
+        outputDir,
+        `frame_${String(frame).padStart(4, '0')}.png`
+    )
+    await page.screenshot({
+        path: filePath as `${string}.png`,
+        type: 'png',
+        fullPage: false,
+        omitBackground: false
+    })
+
+    scrollPosition += scrollStep
+    frame++
+
+    // Try to stay on a ~16.67ms (60fps) interval
+    const elapsed = Date.now() - startTime
+    const targetTime = frame * (1000 / 60)
+    const sleepTime = targetTime - elapsed
+
+    if (sleepTime > 0) {
+        await new Promise(resolve => setTimeout(resolve, sleepTime))
+    }
 }
+
+await browser.close()
