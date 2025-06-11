@@ -24,6 +24,9 @@ const page = await browser.newPage()
 // Navigate to your website
 await page.goto(URL, { waitUntil: 'networkidle0' })
 
+// rm cookie thing
+await page.click('.fs-cc-banner__button.w-button')
+
 // Calculate total scrollable height
 const totalScrollHeight = await page.evaluate(() => document.body.scrollHeight)
 
