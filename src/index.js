@@ -89,7 +89,7 @@ while (scrollPosition < totalScrollHeight) {
 
 await browser.close()
 
-function sleep (ms:number):Promise<void> {
+function sleep (ms) {
     return new Promise((resolve) => {
         setTimeout(resolve, ms)
     })
@@ -99,12 +99,12 @@ function sleep (ms:number):Promise<void> {
 // Take 60 screenshots, one every 1/60th of a second (for 1 second)
 async function intro () {
     for (let frame = 0; frame < 60; frame++) {
-        const filePath = path.join(
+        const filePath = /** @type {(`${string}.png`)} */(path.join(
             outputDir,
             `frame_${String(frame).padStart(4, '0')}.png`
-        )
+        ))
         await page.screenshot({
-            path: filePath as `${string}.png`,
+            path: filePath,
             type: 'png',
             fullPage: false,
             omitBackground: false
