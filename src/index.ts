@@ -25,11 +25,22 @@ const page = await browser.newPage()
 await page.goto(URL, { waitUntil: 'networkidle0' })
 
 // webflow badge
-const el = await page.locator('a.w-webflow-badge')
-el._?.remove()
+await page.evaluate(() => {
+    const interval = setInterval(() => {
+        const badge = document.querySelector('.w-webflow-badge')
+        if (badge) badge.remove()
+    }, 100)
+
+    setTimeout(() => clearInterval(interval), 30000)
+})
 
 // rm cookie thing
 await page.click('.fs-cc-banner__button.w-button')
+
+// try to wait for the animation
+await page.evaluate(async () => {
+    await sleep(3000)
+})
 
 // Calculate total scrollable height
 const totalScrollHeight = await page.evaluate(() => document.body.scrollHeight)
@@ -78,3 +89,9 @@ while (scrollPosition < totalScrollHeight) {
 }
 
 await browser.close()
+
+function sleep (ms:number):Promise<void> {
+    return new Promise((resolve) => {
+        setTimeout(resolve, ms)
+    })
+}
