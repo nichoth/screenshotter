@@ -1,12 +1,14 @@
 // @ts-check
-import 'dotenv/config'
 import puppeteer from 'puppeteer'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
+const ANIMATION_FRAMES = 30  // 1/4 second
 
+const outputDir = path.join(__dirname, '..', 'screenshots')
+await fs.mkdir(outputDir, { recursive: true })
 const URL = 'https://nolaai.webflow.io/'
 
 const browser = await puppeteer.launch({
@@ -23,8 +25,17 @@ const page = await browser.newPage()
 // Navigate to your website
 await page.goto(URL, { waitUntil: 'networkidle0' })
 
+// reload
+await page.reload()
+
+// rm cookie thing
+await page.click('.fs-cc-banner__button.w-button')
+
 // webflow badge
 await page.evaluate(() => {
+    const badge = document.querySelector('.w-webflow-badge')
+    if (badge) badge.remove()
+
     const interval = setInterval(() => {
         const badge = document.querySelector('.w-webflow-badge')
         if (badge) badge.remove()
@@ -33,25 +44,16 @@ await page.evaluate(() => {
     setTimeout(() => clearInterval(interval), 30000)
 })
 
-// rm cookie thing
-await page.click('.fs-cc-banner__button.w-button')
+// wait for the animation 2 seconds
+await intro()
 
-// try to wait for the animation
-await page.evaluate(async () => {
-    await sleep(3000)
-})
-
+// scrolling
 // Calculate total scrollable height
 const totalScrollHeight = await page.evaluate(() => document.body.scrollHeight)
 
 const scrollStep = 5  // pixels per frame
 let scrollPosition = 0
-let frame = 60  // start at frame 60 b/c we have the intro
-
-const outputDir = path.join(__dirname, '..', 'screenshots')
-await fs.mkdir(outputDir, { recursive: true })
-
-await intro()
+let frame = ANIMATION_FRAMES  // start at frame 30 (1/2 second) b/c the intro
 
 const startTime = Date.now()
 
@@ -89,16 +91,10 @@ while (scrollPosition < totalScrollHeight) {
 
 await browser.close()
 
-function sleep (ms) {
-    return new Promise((resolve) => {
-        setTimeout(resolve, ms)
-    })
-}
-
 // take some screenshots before scrolling
 // Take 60 screenshots, one every 1/60th of a second (for 1 second)
 async function intro () {
-    for (let frame = 0; frame < 60; frame++) {
+    for (let frame = 0; frame < ANIMATION_FRAMES; frame++) {
         const filePath = /** @type {(`${string}.png`)} */(path.join(
             outputDir,
             `frame_${String(frame).padStart(4, '0')}.png`
@@ -110,7 +106,7 @@ async function intro () {
             omitBackground: false
         })
         // Wait for 1/60th of a second
-        if (frame < 59) {
+        if (frame < ANIMATION_FRAMES - 1) {
             await new Promise(resolve => setTimeout(resolve, 1000 / 60))
         }
     }
